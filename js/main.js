@@ -29,7 +29,7 @@ leftMenu.addEventListener('click', event => {
     }
 })
 
-window.addEventListener('mouseover', event => {
+const changeImg = event => {
     const target = event.target;
     const card = target.closest('.tv-card');
     if (card) {
@@ -38,15 +38,8 @@ window.addEventListener('mouseover', event => {
         img.setAttribute('src', img.dataset.backdrop);
         img.dataset.backdrop = data;
     }
-})
+}
 
-window.addEventListener('mouseout', event => {
-    const target = event.target;
-    const card = target.closest('.tv-card');
-    if (card) {
-        const img = card.querySelector('img');
-        const data = img.getAttribute('src');
-        img.setAttribute('src', img.dataset.backdrop);
-        img.dataset.backdrop = data;
-    }
-})
+window.addEventListener('mouseover', changeImg);
+
+window.addEventListener('mouseout', changeImg);
