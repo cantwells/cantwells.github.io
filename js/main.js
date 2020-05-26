@@ -1,3 +1,5 @@
+const API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
+
 //Получение элементов
 const leftMenu = document.querySelector('.left-menu'),
     hamburger = document.querySelector('.hamburger');
