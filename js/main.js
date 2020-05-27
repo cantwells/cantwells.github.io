@@ -3,7 +3,8 @@ const API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
 const leftMenu = document.querySelector('.left-menu'),
     hamburger = document.querySelector('.hamburger'),
     tvShowsList = document.querySelector('.tv-shows__list'),
-    modal = document.querySelector('.modal');
+    modal = document.querySelector('.modal'),
+    tvCardVote = document.querySelector('.tv-card__vote');
 
 class DBConnect {
     getData = async(url) => {
@@ -27,6 +28,7 @@ const renderCard = response => {
     tvShowsList.textContent = '';
 
     data.forEach((movie) => {
+
         const {
             name: title,
             poster_path: poster,
@@ -35,16 +37,16 @@ const renderCard = response => {
         } = movie;
 
         const posterImg = poster ? PATH + poster : '../img/no-poster.jpg';
-        const backdropImg = '';
-        const voteImg = '';
+        const backdropImg = backdrop ? PATH + backdrop : '../img/no-poster.jpg';;
+        const voteImg = vote ? `<span class="tv-card__vote">${vote}</span>` : '';
 
         const card = document.createElement('li');
         card.classList.add('tv-shows__item');
         card.innerHTML = `
-        <a href="#" class="tv-card">
-            <span class="tv-card__vote">${vote}</span>
+        <a href="#" class="tv-card"> 
+            ${voteImg}
             <img class="tv-card__img" src="${posterImg}" 
-            data-backdrop="${PATH + backdrop}" 
+            data-backdrop="${backdropImg}" 
             alt="${title}">
             <h4 class="tv-card__head">${title}</h4>
         </a>`;
