@@ -1,5 +1,11 @@
 const API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
 
+class DBConnect {
+    getData(url) {
+        // fetch( url )
+    }
+}
+
 //Получение элементов
 const leftMenu = document.querySelector('.left-menu'),
     hamburger = document.querySelector('.hamburger'),
@@ -52,3 +58,25 @@ const changeImg = event => {
 tvShowsList.addEventListener('mouseover', changeImg);
 //После выходе мышки за пределы карточки
 tvShowsList.addEventListener('mouseout', changeImg);
+
+//Вывод модального окна
+tvShowsList.addEventListener('click', event => {
+    event.preventDefault();
+    const target = event.target;
+    const card = target.closest('.tv-card');
+    if (card) {
+        document.body.style.overflow = 'hidden';
+        modal.classList.remove('hide');
+    }
+});
+
+//Закрытие модального окна
+modal.addEventListener('click', event => {
+    const target = event.target;
+    const cross = target.closest('.cross');
+    const overlay = target.matches('.modal');
+    if (cross || overlay) {
+        document.body.style.overflow = '';
+        modal.classList.add('hide');
+    }
+})
