@@ -2,7 +2,9 @@ const API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
 
 //Получение элементов
 const leftMenu = document.querySelector('.left-menu'),
-    hamburger = document.querySelector('.hamburger');
+    hamburger = document.querySelector('.hamburger'),
+    tvShowsList = document.querySelector('.tv-shows__list'),
+    modal = document.querySelector('.modal');
 
 //Вывод меню
 hamburger.addEventListener('click', event => {
@@ -31,17 +33,22 @@ leftMenu.addEventListener('click', event => {
     }
 })
 
+//Функция смены картинки
 const changeImg = event => {
     const target = event.target;
     const card = target.closest('.tv-card');
     if (card) {
         const img = card.querySelector('img');
-        const data = img.getAttribute('src');
-        img.setAttribute('src', img.dataset.backdrop);
-        img.dataset.backdrop = data;
+        //Деструктуризация
+        [img.src, img.dataset.backdrop] = [img.dataset.backdrop, img.src];
+        //Альтернптива
+        // const data = img.getAttribute('src');
+        // img.setAttribute('src', img.dataset.backdrop);
+        // img.dataset.backdrop = data;
     }
 }
 
-window.addEventListener('mouseover', changeImg);
-
-window.addEventListener('mouseout', changeImg);
+//При наведение мыши на карточку
+tvShowsList.addEventListener('mouseover', changeImg);
+//После выходе мышки за пределы карточки
+tvShowsList.addEventListener('mouseout', changeImg);
