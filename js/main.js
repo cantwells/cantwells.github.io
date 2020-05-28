@@ -37,7 +37,7 @@ const renderCard = response => {
         } = movie;
 
         const posterImg = poster ? PATH + poster : '../img/no-poster.jpg';
-        const backdropImg = backdrop ? PATH + backdrop : '../img/no-poster.jpg';;
+        const backdropImg = backdrop ? PATH + backdrop : '';
         const voteImg = vote ? `<span class="tv-card__vote">${vote}</span>` : '';
 
         const card = document.createElement('li');
@@ -74,7 +74,7 @@ document.addEventListener('click', event => {
     }
 })
 
-//Показывать подпункты
+//Показывать подпункты меню
 leftMenu.addEventListener('click', event => {
     const target = event.target;
     const dropdown = target.closest('.dropdown');
@@ -92,7 +92,7 @@ const changeImg = event => {
     if (card) {
         const img = card.querySelector('img');
         //Деструктуризация
-        [img.src, img.dataset.backdrop] = [img.dataset.backdrop, img.src];
+        if (img.dataset.backdrop)[img.src, img.dataset.backdrop] = [img.dataset.backdrop, img.src];
         //Альтернптива
         // const data = img.getAttribute('src');
         // img.setAttribute('src', img.dataset.backdrop);
