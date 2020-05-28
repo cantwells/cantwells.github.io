@@ -5,7 +5,14 @@ const leftMenu = document.querySelector('.left-menu'),
     hamburger = document.querySelector('.hamburger'),
     tvShowsList = document.querySelector('.tv-shows__list'),
     modal = document.querySelector('.modal'),
-    tvCardVote = document.querySelector('.tv-card__vote');
+    tvCardVote = document.querySelector('.tv-card__vote'),
+    tvShows = document.querySelector('.tv-shows'),
+    tvCardImg = document.querySelector('.tv-card__img'),
+    modalTitle = document.querySelector('.modal__title'),
+    genresList = document.querySelector('.genres-list'),
+    rating = document.querySelector('.rating'),
+    description = document.querySelector('.description'),
+    modalLink = document.querySelector('.modal__link');
 
 //класс подключение к БД
 class DBConnect {
@@ -19,11 +26,19 @@ class DBConnect {
         }
     }
 
+    //получение данных для карточек
     getTestData = () => {
         return this.getData('./test.json');
     }
 
+    //получение данных для модального окна
+    getModalData = () => {
+        return this.getData('./card.json');
+    }
 }
+
+const loading = document.createElement('div');
+loading.className = 'loading';
 
 //Отрисовка карточек
 const renderCard = response => {
@@ -31,7 +46,6 @@ const renderCard = response => {
     tvShowsList.textContent = '';
 
     data.forEach((movie) => {
-
         const {
             name: title,
             poster_path: poster,
@@ -53,13 +67,39 @@ const renderCard = response => {
             alt="${title}">
             <h4 class="tv-card__head">${title}</h4>
         </a>`;
+        loading.remove();
         tvShowsList.append(card);
     });
-
 }
 
-//Вывод карточек с фильмами
-new DBConnect().getTestData().then(renderCard).catch(e => console.log(e.message));
+const renderModal = response => {
+    const {
+        poster_path: poster,
+        name: title,
+        overview,
+        genres,
+        vote_average: vote,
+        homepage,
+    } = response;
+    tvCardImg.src = poster ? IMG_PATH + poster : '../img/no-poster.jpg';
+    tvCardImg.alt = title;
+    modalTitle.textContent = title;
+    rating.textContent = vote;
+    description.textContent = overview;
+    modalLink.href = homepage;
+    genresList.innerHTML = genres.reduce((acc, item) => {
+        const genre = item.name;
+        return `${acc}<li>${genre[0].toUpperCase()}${genre.substring(1)}</li>`;
+    }, "");
+}
+
+{
+    tvShows.prepend(loading);
+    //Вывод карточек с фильмами
+    new DBConnect().getTestData().then(renderCard).catch(e => console.log(e.message));
+}
+
+new DBConnect().getModalData().then(renderModal).catch(e => console.log(e.message));
 
 
 //Вывод меню
