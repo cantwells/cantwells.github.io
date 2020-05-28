@@ -1,4 +1,5 @@
 const API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
+const IMG_PATH = "https://image.tmdb.org/t/p/w185_and_h278_bestv2/";
 //Получение элементов
 const leftMenu = document.querySelector('.left-menu'),
     hamburger = document.querySelector('.hamburger'),
@@ -6,6 +7,7 @@ const leftMenu = document.querySelector('.left-menu'),
     modal = document.querySelector('.modal'),
     tvCardVote = document.querySelector('.tv-card__vote');
 
+//класс подключение к БД
 class DBConnect {
     getData = async(url) => {
         const res = await fetch(url);
@@ -20,10 +22,11 @@ class DBConnect {
     getTestData = () => {
         return this.getData('./test.json');
     }
+
 }
 
+//Отрисовка карточек
 const renderCard = response => {
-    const PATH = "https://image.tmdb.org/t/p/w185_and_h278_bestv2/";
     const data = response.results;
     tvShowsList.textContent = '';
 
@@ -36,8 +39,8 @@ const renderCard = response => {
             vote_average: vote,
         } = movie;
 
-        const posterImg = poster ? PATH + poster : '../img/no-poster.jpg';
-        const backdropImg = backdrop ? PATH + backdrop : '';
+        const posterImg = poster ? IMG_PATH + poster : '../img/no-poster.jpg';
+        const backdropImg = backdrop ? IMG_PATH + backdrop : '';
         const voteImg = vote ? `<span class="tv-card__vote">${vote}</span>` : '';
 
         const card = document.createElement('li');
@@ -55,6 +58,7 @@ const renderCard = response => {
 
 }
 
+//Вывод карточек с фильмами
 new DBConnect().getTestData().then(renderCard).catch(e => console.log(e.message));
 
 
