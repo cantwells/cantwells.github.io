@@ -1,4 +1,3 @@
-const API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
 const IMG_PATH = "https://image.tmdb.org/t/p/w185_and_h278_bestv2/";
 //Получение элементов
 const leftMenu = document.querySelector('.left-menu'),
@@ -12,10 +11,16 @@ const leftMenu = document.querySelector('.left-menu'),
     genresList = document.querySelector('.genres-list'),
     rating = document.querySelector('.rating'),
     description = document.querySelector('.description'),
-    modalLink = document.querySelector('.modal__link');
+    modalLink = document.querySelector('.modal__link'),
+    searchForm = document.querySelector('.search__form'),
+    searchFormInput = document.querySelector('.search__form-input');
 
 //класс подключение к БД
 class DBConnect {
+    constructor() {
+        this.API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
+        this.SERVER = "https://api.themoviedb.org/3";
+    }
     getData = async(url) => {
         const res = await fetch(url);
 
@@ -32,10 +37,20 @@ class DBConnect {
     }
 
     //получение данных для модального окна
-    getModalData = () => {
+    getTestCard = () => {
         return this.getData('./card.json');
     }
+
+    getSearchResult = query => {
+        return this.getData(`${this.SERVER}/search/tv?api_key=${this.API_KEY}&query=${query}&language=ru-RU`);
+    }
+
+    getTvShow = id => {
+        return this.getData(`${this.SERVER}/tv/${id}?api_key=${this.API_KEY}&language=ru-RU`);
+    }
 }
+
+const DBConnector = new DBConnect();
 
 const loading = document.createElement('div');
 loading.className = 'loading';
@@ -47,6 +62,7 @@ const renderCard = response => {
 
     data.forEach((movie) => {
         const {
+            id,
             name: title,
             poster_path: poster,
             backdrop_path: backdrop,
@@ -60,7 +76,7 @@ const renderCard = response => {
         const card = document.createElement('li');
         card.classList.add('tv-shows__item');
         card.innerHTML = `
-        <a href="#" class="tv-card"> 
+        <a href="#" id=${id} class="tv-card"> 
             ${voteImg}
             <img class="tv-card__img" src="${posterImg}" 
             data-backdrop="${backdropImg}" 
@@ -93,15 +109,6 @@ const renderModal = response => {
     }, "");
 }
 
-{
-    tvShows.prepend(loading);
-    //Вывод карточек с фильмами
-    new DBConnect().getTestData().then(renderCard).catch(e => console.log(e.message));
-}
-
-new DBConnect().getModalData().then(renderModal).catch(e => console.log(e.message));
-
-
 //Вывод меню
 hamburger.addEventListener('click', event => {
     leftMenu.classList.toggle('openMenu');
@@ -120,6 +127,7 @@ document.addEventListener('click', event => {
 
 //Показывать подпункты меню
 leftMenu.addEventListener('click', event => {
+    event.preventDefault();
     const target = event.target;
     const dropdown = target.closest('.dropdown');
     if (dropdown) {
@@ -155,8 +163,13 @@ tvShowsList.addEventListener('click', event => {
     const target = event.target;
     const card = target.closest('.tv-card');
     if (card) {
-        document.body.style.overflow = 'hidden';
-        modal.classList.remove('hide');
+        DBConnector.getTvShow(card.id)
+            .then(renderModal)
+            .then(() => {
+                document.body.style.overflow = 'hidden';
+                modal.classList.remove('hide');
+            })
+            .catch(e => console.log(e.message))
     }
 });
 
@@ -168,5 +181,16 @@ modal.addEventListener('click', event => {
     if (cross || overlay) {
         document.body.style.overflow = '';
         modal.classList.add('hide');
+    }
+})
+
+//Поиск
+searchForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const query = searchFormInput.value.trim();
+    searchFormInput.value = '';
+    if (query) {
+        tvShows.prepend(loading);
+        DBConnector.getSearchResult(query).then(renderCard);
     }
 })
