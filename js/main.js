@@ -13,7 +13,9 @@ const leftMenu = document.querySelector('.left-menu'),
     description = document.querySelector('.description'),
     modalLink = document.querySelector('.modal__link'),
     searchForm = document.querySelector('.search__form'),
-    searchFormInput = document.querySelector('.search__form-input');
+    searchFormInput = document.querySelector('.search__form-input'),
+    preloader = document.querySelector('.preloader'),
+    tvShowsHead = document.querySelector('.tv-shows__head');
 
 //класс подключение к БД
 class DBConnect {
@@ -31,20 +33,22 @@ class DBConnect {
         }
     }
 
-    //получение данных для карточек
+    //тестовое получение данных для карточек
     getTestData = () => {
         return this.getData('./test.json');
     }
 
-    //получение данных для модального окна
+    //тестовое получение данных для модального окна
     getTestCard = () => {
         return this.getData('./card.json');
     }
 
+    //Получение результата из поисковой формы
     getSearchResult = query => {
         return this.getData(`${this.SERVER}/search/tv?api_key=${this.API_KEY}&query=${query}&language=ru-RU`);
     }
 
+    //Вывод модального окна
     getTvShow = id => {
         return this.getData(`${this.SERVER}/tv/${id}?api_key=${this.API_KEY}&language=ru-RU`);
     }
@@ -52,43 +56,54 @@ class DBConnect {
 
 const DBConnector = new DBConnect();
 
+//Создаем прелоудер при обновлении страницы с фильмами
 const loading = document.createElement('div');
 loading.className = 'loading';
 
 //Отрисовка карточек
 const renderCard = response => {
+
     const data = response.results;
+
     tvShowsList.textContent = '';
+    if (data.length) {
 
-    data.forEach((movie) => {
-        const {
-            id,
-            name: title,
-            poster_path: poster,
-            backdrop_path: backdrop,
-            vote_average: vote,
-        } = movie;
+        data.forEach((movie) => {
+            const {
+                id,
+                name: title,
+                poster_path: poster,
+                backdrop_path: backdrop,
+                vote_average: vote,
+            } = movie;
 
-        const posterImg = poster ? IMG_PATH + poster : '../img/no-poster.jpg';
-        const backdropImg = backdrop ? IMG_PATH + backdrop : '';
-        const voteImg = vote ? `<span class="tv-card__vote">${vote}</span>` : '';
+            const posterImg = poster ? IMG_PATH + poster : '../img/no-poster.jpg';
+            const backdropImg = backdrop ? IMG_PATH + backdrop : '';
+            const voteImg = vote ? `<span class="tv-card__vote">${vote}</span>` : '';
 
-        const card = document.createElement('li');
-        card.classList.add('tv-shows__item');
-        card.innerHTML = `
-        <a href="#" id=${id} class="tv-card"> 
-            ${voteImg}
-            <img class="tv-card__img" src="${posterImg}" 
-            data-backdrop="${backdropImg}" 
-            alt="${title}">
-            <h4 class="tv-card__head">${title}</h4>
-        </a>`;
+            const card = document.createElement('li');
+            card.classList.add('tv-shows__item');
+            card.innerHTML = `
+            <a href="#" id=${id} class="tv-card"> 
+                ${voteImg}
+                <img class="tv-card__img" src="${posterImg}" 
+                data-backdrop="${backdropImg}" 
+                alt="${title}">
+                <h4 class="tv-card__head">${title}</h4>
+            </a>`;
+            loading.remove();
+            tvShowsList.append(card);
+        });
+    } else {
         loading.remove();
-        tvShowsList.append(card);
-    });
+        tvShowsHead.classList.add('error');
+        tvShowsHead.textContent = "По данному запросу данные отсутсвуют :(";
+    }
 }
 
+//Отрисовка модального окна
 const renderModal = response => {
+    preloader.classList.remove('show');
     const {
         poster_path: poster,
         name: title,
@@ -160,6 +175,7 @@ tvShowsList.addEventListener('mouseout', changeImg);
 //Вывод модального окна
 tvShowsList.addEventListener('click', event => {
     event.preventDefault();
+    preloader.classList.add('show');
     const target = event.target;
     const card = target.closest('.tv-card');
     if (card) {
@@ -184,7 +200,7 @@ modal.addEventListener('click', event => {
     }
 })
 
-//Поиск
+//Обработка поисковой строки
 searchForm.addEventListener('submit', event => {
     event.preventDefault();
     const query = searchFormInput.value.trim();
