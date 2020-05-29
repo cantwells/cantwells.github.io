@@ -1,6 +1,7 @@
 const IMG_PATH = "https://image.tmdb.org/t/p/w185_and_h278_bestv2/";
 //Получение элементов
 const leftMenu = document.querySelector('.left-menu'),
+    logo = document.querySelector('.logo'),
     hamburger = document.querySelector('.hamburger'),
     dropdowns = document.querySelectorAll('.dropdown'),
     tvShowsList = document.querySelector('.tv-shows__list'),
@@ -16,14 +17,16 @@ const leftMenu = document.querySelector('.left-menu'),
     searchForm = document.querySelector('.search__form'),
     searchFormInput = document.querySelector('.search__form-input'),
     preloader = document.querySelector('.preloader'),
-    tvShowsHead = document.querySelector('.tv-shows__head');
+    tvShowsHead = document.querySelector('.tv-shows__head'),
+    pagination = document.querySelector('.pagination');
 
 //класс подключение к БД
 class DBConnect {
     constructor() {
-        this.API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
-        this.SERVER = "https://api.themoviedb.org/3";
-    }
+            this.API_KEY = "fa9de1bb626c74440bbf2532a0d596a0";
+            this.SERVER = "https://api.themoviedb.org/3";
+        }
+        //Получение данных
     getData = async(url) => {
         const res = await fetch(url);
 
@@ -45,13 +48,27 @@ class DBConnect {
     }
 
     //Получение результата из поисковой формы
-    getSearchResult = query => {
-        return this.getData(`${this.SERVER}/search/tv?api_key=${this.API_KEY}&query=${query}&language=ru-RU`);
+    getSearchResult = (query, page = 1) => {
+        return this.getData(`${this.SERVER}/search/tv?api_key=${this.API_KEY}&query=${query}&language=ru-RU&page=${page}`);
     }
 
     //Вывод модального окна
-    getTvShow = id => {
+    getModalShow = id => {
         return this.getData(`${this.SERVER}/tv/${id}?api_key=${this.API_KEY}&language=ru-RU`);
+    }
+
+    //Вывод топовых постов сериалов
+    getTopShow = (type, page = 1) => {
+        return this.getData(`${this.SERVER}/tv/${type}?api_key=${this.API_KEY}&language=ru-RU&page=${page}`);
+    }
+
+    getRecommendShow = (id, page = 1) => {
+        return this.getData(`${this.SERVER}/tv/${id}/similar?api_key=${this.API_KEY}&language=ru-RU&page=${page}`);
+    }
+
+    //Получение трейлеров
+    getVideo = id => {
+        return this.getData(`${this.SERVER}/tv/${id}/videos?api_key=${this.API_KEY}&language=ru-RU`)
     }
 }
 
@@ -61,15 +78,18 @@ const DBConnector = new DBConnect();
 const loading = document.createElement('div');
 loading.className = 'loading';
 
+//===================================Функции=============================================================
+
 //Отрисовка карточек
-const renderCard = response => {
-
-    const data = response.results;
-
+const renderCard = (response, target) => {
     tvShowsList.textContent = '';
-    if (data.length) {
+    console.log(response);
 
-        data.forEach((movie) => {
+    if (response.results.length) {
+        tvShowsHead.classList.remove('error');
+        const text = target ? target.textContent : "Результат поиска";
+        tvShowsHead.textContent = text;
+        response.results.forEach((movie) => {
             const {
                 id,
                 name: title,
@@ -95,6 +115,7 @@ const renderCard = response => {
             loading.remove();
             tvShowsList.append(card);
         });
+        return response;
     } else {
         loading.remove();
         tvShowsHead.classList.add('error');
@@ -125,11 +146,48 @@ const renderModal = response => {
     }, "");
 }
 
+//Вывод пагинации
+const renderPagination = (pages, current) => {
+    pagination.innerHTML = '';
+    let links = '';
+    for (let i = 1; i < pages; i++) {
+        if (i === current) {
+            links += `<li><a class="current" href="#">${i}</li>`;
+        } else {
+            links += `<li><a href='#'>${i}</li>`;
+        }
+    }
+    // console.log(links);
+    pagination.innerHTML = links;
+}
+
 //Сворачивать подпунткы меню
 const dropdownSlideUp = () => {
     const arr = [...dropdowns];
     arr.forEach(item => item.classList.remove('active'));
 }
+
+//Функция смены картинки
+const changeImg = event => {
+    const target = event.target;
+    const card = target.closest('.tv-card');
+    if (card) {
+        const img = card.querySelector('img');
+        //Деструктуризация
+        if (img.dataset.backdrop)[img.src, img.dataset.backdrop] = [img.dataset.backdrop, img.src];
+        //Альтернптива
+        // const data = img.getAttribute('src');
+        // img.setAttribute('src', img.dataset.backdrop);
+        // img.dataset.backdrop = data;
+    }
+}
+
+//=================================События==========================================================
+
+//При клике на лого возвращаемся на стартовую страницу
+logo.addEventListener('click', event => {
+    DBConnector.getTopShow('popular').then(renderCard);
+})
 
 //Вывод меню
 hamburger.addEventListener('click', event => {
@@ -159,22 +217,21 @@ leftMenu.addEventListener('click', event => {
         leftMenu.classList.add('openMenu');
         hamburger.classList.add('open');
     }
+
+    if (target.closest('.top-rated')) {
+        DBConnector.getTopShow('top_rated').then(res => renderCard(res, target));
+    }
+    if (target.closest('.popular')) {
+        DBConnector.getTopShow('popular').then(res => renderCard(res, target));
+    }
+    if (target.closest('.today')) {
+        DBConnector.getTopShow('airing_today').then(res => renderCard(res, target));
+    }
+    if (target.closest('.week')) {
+        DBConnector.getTopShow('on_the_air').then(res => renderCard(res, target));
+    }
 })
 
-//Функция смены картинки
-const changeImg = event => {
-    const target = event.target;
-    const card = target.closest('.tv-card');
-    if (card) {
-        const img = card.querySelector('img');
-        //Деструктуризация
-        if (img.dataset.backdrop)[img.src, img.dataset.backdrop] = [img.dataset.backdrop, img.src];
-        //Альтернптива
-        // const data = img.getAttribute('src');
-        // img.setAttribute('src', img.dataset.backdrop);
-        // img.dataset.backdrop = data;
-    }
-}
 
 //При наведение мыши на карточку
 tvShowsList.addEventListener('mouseover', changeImg);
@@ -188,13 +245,17 @@ tvShowsList.addEventListener('click', event => {
     const target = event.target;
     const card = target.closest('.tv-card');
     if (card) {
-        DBConnector.getTvShow(card.id)
+        DBConnector.getModalShow(card.id)
             .then(renderModal)
             .then(() => {
                 document.body.style.overflow = 'hidden';
                 modal.classList.remove('hide');
             })
             .catch(e => console.log(e.message))
+
+        DBConnector.getVideo(card.id).then(res => console.log(res));
+        DBConnector.getRecommendShow(card.id).then(res => console.log(res));
+
     }
 });
 
@@ -216,6 +277,14 @@ searchForm.addEventListener('submit', event => {
     searchFormInput.value = '';
     if (query) {
         tvShows.prepend(loading);
-        DBConnector.getSearchResult(query).then(renderCard);
+        DBConnector.getSearchResult(query)
+            .then(renderCard)
+            .then(response => renderPagination(response.total_pages, response.page));
     }
 })
+
+
+//Вывод на главной странице
+DBConnector.getTopShow('airing_today')
+    .then(renderCard)
+    .then(response => renderPagination(response.total_pages, response.page));
