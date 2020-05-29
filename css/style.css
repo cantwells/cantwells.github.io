@@ -100,6 +100,10 @@ p {
     color: red;
 }
 
+.logo {
+    cursor: pointer;
+}
+
 .container {
     max-width: 1000px;
     margin: 0 auto;
@@ -908,6 +912,24 @@ main {
     filter: brightness(100%);
     -webkit-animation-name: tap-upper-4;
     animation-name: tap-upper-4;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+}
+
+.pagination li {
+    margin-right: 5px;
+}
+
+.pagination li a {
+    padding: 5px;
+    color: #9A9A9A;
+}
+
+.pagination li a.current {
+    color: #000000;
 }
 
 @-webkit-keyframes tap-upper-1 {
