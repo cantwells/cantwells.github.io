@@ -2,6 +2,7 @@ const IMG_PATH = "https://image.tmdb.org/t/p/w185_and_h278_bestv2/";
 //Получение элементов
 const leftMenu = document.querySelector('.left-menu'),
     hamburger = document.querySelector('.hamburger'),
+    dropdowns = document.querySelectorAll('.dropdown'),
     tvShowsList = document.querySelector('.tv-shows__list'),
     modal = document.querySelector('.modal'),
     tvCardVote = document.querySelector('.tv-card__vote'),
@@ -124,10 +125,17 @@ const renderModal = response => {
     }, "");
 }
 
+//Сворачивать подпунткы меню
+const dropdownSlideUp = () => {
+    const arr = [...dropdowns];
+    arr.forEach(item => item.classList.remove('active'));
+}
+
 //Вывод меню
 hamburger.addEventListener('click', event => {
     leftMenu.classList.toggle('openMenu');
     hamburger.classList.toggle('open');
+    dropdownSlideUp();
 })
 
 //Сворачивание меню при нажатии по документу
@@ -137,6 +145,7 @@ document.addEventListener('click', event => {
     if (!target.closest('.left-menu')) {
         leftMenu.classList.remove('openMenu');
         hamburger.classList.remove('open');
+        dropdownSlideUp();
     }
 })
 
